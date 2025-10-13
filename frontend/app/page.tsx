@@ -35,6 +35,7 @@ import React from "react";
 import { LastGameResults } from './components/LastGameResults';
 import { Leaderboard } from './components/Leaderboard';
 import { GlobalStats } from './components/GlobalStats';
+import { ChangeTeamNameModal } from './components/ChangeTeamNameModal';
 import moment from "moment";
 
 export default function App() {
@@ -55,6 +56,7 @@ export default function App() {
     team2_info: any;
   } | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [isChangeNameModalOpen, setIsChangeNameModalOpen] = useState(false);
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
@@ -292,6 +294,7 @@ export default function App() {
       setIsCreatingTeam(false);
     }
   }, [address, fetchTeamInfo]);
+
 
   // Watch for wallet connection changes
   useEffect(() => {
@@ -569,8 +572,18 @@ export default function App() {
               </div>
             ) : teamInfo ? (
               <div className="p-4">
-                <div className="mb-3">
+                <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Your Team</h3>
+                  <button
+                    onClick={() => setIsChangeNameModalOpen(true)}
+                    className="text-xs text-blue-600 hover:text-blue-700 underline flex items-center gap-1"
+                    title="Change team name"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Change Name
+                  </button>
                 </div>
                 <div className="flex items-start gap-4">
                   {/* Shield logo */}
@@ -741,6 +754,22 @@ export default function App() {
         draggable
         pauseOnHover
       />
+
+      {/* Change Team Name Modal */}
+      {teamInfo && (
+        <ChangeTeamNameModal
+        isOpen={isChangeNameModalOpen}
+        onClose={() => setIsChangeNameModalOpen(false)}
+        onSuccess={() => {
+          // Refresh team info after successful name change
+          if (address) {
+            fetchTeamInfo(address);
+          }
+        }}
+        currentTeamName={teamInfo.name}
+        walletAddress={address}
+      />
+      )}
     </div>
   );
 }

@@ -30,6 +30,8 @@ error GameHasNotReachedMaxMoves();
 error OnlyGameEngineServerCanCall();
 error InvalidTeam();
 error MovesEncryptedCannotBeZero();
+error ChangeTeamName_SameNameProvided();
+error ChangeTeamName_NotTeamOwner();
 
 contract ChessBallGame is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     using GameLib for *;
@@ -118,6 +120,11 @@ contract ChessBallGame is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         uint256 gameRequestId,
         uint256 team1id,
         uint256 team2id
+    );
+    event TeamNameChanged(
+    uint256 indexed teamId,
+    string oldName,
+    string newName
     );
     // ========================================
     // CONSTRUCTOR & INITIALIZATION
@@ -208,6 +215,72 @@ contract ChessBallGame is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     ) public onlyRelayer {
         _createTeam(sender, name, country);
     }
+
+    // ========================================
+// CHANGE TEAM NAME
+// ========================================
+
+/**
+ * @dev Internal function that changes a team's name with a specified sender
+ * @param sender The address requesting the name change
+ * @param newName The new team name
+ */
+function _changeTeamName(
+    address sender,
+    string memory newName
+) internal {
+    uint256 teamId = teamIdByWallet[sender];
+    if (teamId == 0) revert DoesNotExist();
+    if (bytes(newName).length == 0) revert CreateTeam_NameIsRequired();
+    
+    GameLib.Team storage team = teams[teamId];
+    if (team.wallet != sender) revert ChangeTeamName_NotTeamOwner();
+    
+    // Trim spaces from new name
+    newName = GameLib.trimSpaces(newName);
+    
+    // Check if name is the same as current
+    if (keccak256(bytes(team.name)) == keccak256(bytes(newName))) {
+        revert ChangeTeamName_SameNameProvided();
+    }
+    
+    // Check if new name already exists
+    if (teamNames[newName]) revert CreateTeam_TeamNameAlreadyExists();
+    
+    // Store old name for event
+    string memory oldName = team.name;
+    
+    // Remove old name from mapping
+    teamNames[oldName] = false;
+    
+    // Update team name
+    team.name = newName;
+    
+    // Add new name to mapping
+    teamNames[newName] = true;
+    
+    emit TeamNameChanged(teamId, oldName, newName);
+}
+
+/**
+ * @dev Public wrapper that calls internal function with msg.sender
+ * @param newName The new team name
+ */
+function changeTeamName(string memory newName) public {
+    _changeTeamName(msg.sender, newName);
+}
+
+/**
+ * @dev Relayer version that can change team name for any address
+ * @param sender The address of the team owner
+ * @param newName The new team name
+ */
+function changeTeamNameRelayer(
+    address sender,
+    string memory newName
+) public onlyRelayer {
+    _changeTeamName(sender, newName);
+}
 
     // ========================================
     // CREATE GAME REQUEST
