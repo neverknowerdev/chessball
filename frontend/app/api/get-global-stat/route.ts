@@ -3,16 +3,38 @@ import { CONTRACT_ADDRESS } from '@/lib/contract';
 import { createAnonClient } from '@/lib/supabase';
 import { redis } from '@/lib/redis';
 
-// Function to get transaction count from Basescan with caching
-async function getTransactionCountFromBasescan(): Promise<number> {
-    const cacheKey = `basescan-tx-count:${CONTRACT_ADDRESS}`;
+// Function to prettify numbers (1M, 140K, etc.)
+function prettifyNumber(num: number): string {
+    if (num >= 1_000_000) {
+        const millions = num / 1_000_000;
+        // Show one decimal place if it's significant, otherwise round
+        return millions >= 10 || millions % 1 === 0 
+            ? `${Math.round(millions)}M` 
+            : `${Math.round(millions * 10) / 10}M`;
+    }
+    
+    if (num >= 1_000) {
+        const thousands = num / 1_000;
+        // Show one decimal place if it's significant, otherwise round
+        return thousands >= 10 || thousands % 1 === 0 
+            ? `${Math.round(thousands)}K` 
+            : `${Math.round(thousands * 10) / 10}K`;
+    }
+    
+    // For numbers under 1000, format with commas
+    return num.toLocaleString('en-US');
+}
+
+// Function to get event count from Basescan with caching
+async function getEventCountFromBasescan(): Promise<number> {
+    const cacheKey = `basescan-event-count:${CONTRACT_ADDRESS}`;
 
     // Check cache first
     if (redis) {
         try {
             const cachedCount = await redis.get(cacheKey);
             if (cachedCount !== null) {
-                console.log('Returning cached transaction count from Basescan');
+                console.log('Returning cached event count from Basescan');
                 return parseInt(cachedCount as string, 10);
             }
         } catch (cacheError) {
@@ -27,8 +49,9 @@ async function getTransactionCountFromBasescan(): Promise<number> {
             return 0;
         }
 
-        // Get transaction list for the contract address
-        const url = `https://api.basescan.org/api?module=account&action=txlist&address=${CONTRACT_ADDRESS}&startblock=0&endblock=99999999&page=1&offset=10000&sort=desc&apikey=${apiKey}`;
+        // Get event logs for the contract address
+        // We'll fetch logs for relevant events: GameStarted, MoveMade, GameStateChanged, GameFinished
+        const url = `https://api.basescan.org/api?module=logs&action=getLogs&address=${CONTRACT_ADDRESS}&fromBlock=0&toBlock=latest&page=1&offset=10000&apikey=${apiKey}`;
 
         const response = await fetch(url, {
             method: 'GET',
@@ -48,23 +71,23 @@ async function getTransactionCountFromBasescan(): Promise<number> {
             return 0;
         }
 
-        // Count transactions (result is an array of transactions)
-        const transactionCount = Array.isArray(data.result) ? data.result.length : 0;
-        console.log(`Found ${transactionCount} transactions for contract ${CONTRACT_ADDRESS}`);
+        // Count events (result is an array of event logs)
+        const eventCount = Array.isArray(data.result) ? data.result.length : 0;
+        console.log(`Found ${eventCount} events for contract ${CONTRACT_ADDRESS}`);
 
         // Cache the result for 10 minutes (600 seconds)
         if (redis) {
             try {
-                await redis.setex(cacheKey, 600, transactionCount.toString());
-                console.log('Cached transaction count from Basescan');
+                await redis.setex(cacheKey, 600, eventCount.toString());
+                console.log('Cached event count from Basescan');
             } catch (cacheError) {
                 console.warn('Redis cache write error:', cacheError);
             }
         }
 
-        return transactionCount;
+        return eventCount;
     } catch (error) {
-        console.error('Error fetching from Basescan:', error);
+        console.error('Error fetching events from Basescan:', error);
         return 0;
     }
 }
@@ -98,30 +121,44 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             );
         }
 
-        // Get transaction count from Basescan API
-        let transactionCount = 0;
+        // Get event count from Basescan API
+        let eventCount = 0;
         try {
-            // Try to get real transaction count from Basescan
-            transactionCount = await getTransactionCountFromBasescan();
+            // Try to get real event count from Basescan
+            eventCount = await getEventCountFromBasescan();
 
             // Fallback to estimation if Basescan fails
-            if (transactionCount === 0) {
-                console.log('Using fallback estimation for transaction count');
-                // Each team creation = 1 transaction, each game = 2 transactions (create + finish)
-                transactionCount = (teamCount || 0) + ((gameCount || 0) * 2);
+            if (eventCount === 0) {
+                console.log('Using fallback estimation for event count');
+                // Estimate: ~45 events per game (moves + state changes) * 3 (average multiplier)
+                // Based on your data: 45x3 events per game, 23 games played
+                const estimatedEventsPerGame = 45 * 3;
+                eventCount = (gameCount || 0) * estimatedEventsPerGame;
             }
-        } catch (txError) {
-            console.error('Error fetching transaction count:', txError);
+        } catch (eventError) {
+            console.error('Error fetching event count:', eventError);
             // Fallback to estimated count
-            transactionCount = (teamCount || 0) + ((gameCount || 0) * 2);
+            const estimatedEventsPerGame = 45 * 3;
+            eventCount = (gameCount || 0) * estimatedEventsPerGame;
         }
+
+        // Format the numbers for display
+        const formattedEventCount = prettifyNumber(eventCount);
+        const formattedTeamCount = prettifyNumber(teamCount || 0);
+        const formattedGameCount = prettifyNumber(gameCount || 0);
 
         return NextResponse.json({
             success: true,
             data: {
                 total_teams: teamCount || 0,
                 total_games: gameCount || 0,
-                total_transactions: transactionCount,
+                total_events: eventCount,
+                // Include formatted versions for display
+                formatted: {
+                    total_teams: formattedTeamCount,
+                    total_games: formattedGameCount,
+                    total_events: formattedEventCount,
+                },
                 lastUpdated: new Date().toISOString()
             }
         });

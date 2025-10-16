@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 interface GlobalStatsData {
     total_teams: number;
     total_games: number;
-    total_transactions: number;
+    total_events : number;
 }
 
 interface GlobalStatsProps {
@@ -151,7 +151,7 @@ export function GlobalStats({ className = "" }: GlobalStatsProps) {
                         <div className="text-xs text-gray-600">Games</div>
                     </div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold animate-number">{globalStats?.total_transactions || 0}</div>
+                        <div className="text-2xl font-bold animate-number">{globalStats?.total_events || 0}</div>
                         <div className="text-xs text-gray-600">Transactions</div>
                     </div>
                 </div>
