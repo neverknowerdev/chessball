@@ -25,13 +25,13 @@ export function formatTimestamp(timestamp: number): string {
 }
 
 /**
- * Creates a standardized authentication message for ChessBall
+ * Creates a standardized authentication message for TactiBall
  * @param walletAddress - The wallet address to include in the message
  * @returns string - The formatted authentication message
  */
 export function createAuthMessage(walletAddress: string, timestamp: number): string {
     const formattedDate = formatTimestamp(timestamp);
-    return `Authenticate with ChessBall\n\nWallet: ${walletAddress}\nTimestamp: ${formattedDate}\n\nThis signature is used to authenticate your wallet to perform game actions.\n\nValid for 24 hours.`;
+    return `Authenticate with TactiBall\n\nWallet: ${walletAddress}\nTimestamp: ${formattedDate}\n\nThis signature is used to authenticate your wallet to perform game actions.\n\nValid for 24 hours.`;
 }
 
 /**
@@ -204,10 +204,10 @@ export async function checkAuthSignatureAndMessage(
         }
 
         // Check if message contains expected format
-        if (!message.includes('Authenticate with ChessBall')) {
+        if (!message.includes('Authenticate with TactiBall')) {
             return {
                 isValid: false,
-                error: 'Invalid message format: must be ChessBall authentication message'
+                error: 'Invalid message format: must be TactiBall authentication message'
             };
         }
 

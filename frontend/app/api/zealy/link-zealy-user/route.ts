@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           error:
-            "No team found. Please create a team at play.chessball.fun first!",
+            "No team found. Please create a team at play.tactiball.fun first!",
         },
         { status: 404 },
       );

@@ -12,32 +12,32 @@ function withValidProperties(
 }
 
 export async function GET() {
-  const URL = "https://play.chessball.fun";
+  const URL = "https://play.tactiball.fun";
 
   return Response.json({
     accountAssociation: {
-      header: "eyJmaWQiOjk2OTIwNiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweEU0ZjE0MWIwRUIxRTYwZkMwMDk1Yjc4N2M0YTM2Njc0QzkyMzY3OTYifQ",
-      payload: "eyJkb21haW4iOiJwbGF5LmNoZXNzYmFsbC5mdW4ifQ",
-      signature: "MHgyMjI5MWVlNzRiNjMyMTQzMDg0ZTlmNjljMjE1MDdiODE3NmI4NTMxMTQ2YjUxMmQyOWQ4MDkwNGU2ZWU5MzgyNDY3NzJiOTFhNWUxNGVjOTM1MTg0ZTVlNTg5ZmNiNTVjZjc0MmZiYzgwNDE0NGJiZGRjMGIxNTJlMTMwZjg4ODFj"
+      header: "eyJmaWQiOjk2OTIwNiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweGY4NDlCYUUwMDU1MzE4OUMwZUJEOUY1MzQyYjZlMDIyMUMyNDBEZjcifQ",
+      payload: "eyJkb21haW4iOiJwbGF5LnRhY3RpYmFsbC5mdW4ifQ",
+      signature: "TnXWOcZfDPSWjG9UGnv6JfuYUFDW4kOSCXZcO+NzcloknViNq7cT+WsYxxSgOvhV+KY71ld/sJShXGubfsIi3Rw="
     },
     frame: withValidProperties({
       version: "1",
-      name: "ChessBall",
+      name: "TactiBall",
       subtitle: "Play. Bet. Earn.",
       description: "Play tactical football - 2D board game, where tactic meets probability. Build your own team, play against friends and earn rewards.",
       screenshotUrls: [],
-      iconUrl: "https://play.chessball.fun/icon.png",
-      splashImageUrl: "https://play.chessball.fun/splash.png",
+      iconUrl: "https://play.tactiball.fun/icon.png",
+      splashImageUrl: "https://play.tactiball.fun/splash.png",
       splashBackgroundColor: "#efe7d4",
       homeUrl: URL,
       webhookUrl: `${URL}/api/webhook`,
       primaryCategory: "games",
-      tags: ["chess", "football", "chessball", "tactical"],
-      heroImageUrl: "https://play.chessball.fun/hero.png",
+      tags: ["chess", "football", "tactiball", "tactical"],
+      heroImageUrl: "https://play.tactiball.fun/hero.png",
       tagline: "Play now",
-      ogTitle: "ChessBall",
-      ogDescription: "Play ChessBall with your friends",
-      ogImageUrl: "https://play.chessball.fun/hero.png",
+      ogTitle: "TactiBall",
+      ogDescription: "Play TactiBall with your friends",
+      ogImageUrl: "https://play.tactiball.fun/hero.png",
     }),
     baseBuilder: {
       allowedAddresses: ["0x810E57D64D4Bd3D92560dF5E82f01f654359F89B"]

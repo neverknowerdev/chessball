@@ -373,14 +373,14 @@ function ConnectZealyContent() {
 
   const zealyConnectUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
-    const appUrl = "https://play.chessball.fun/"
+    const appUrl = "https://play.tactiball.fun/"
     return `https://base.org/mini-apps?url=${encodeURIComponent(appUrl)}`;
   }, []);
 
   const farcasterMiniAppUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     const appId = "uOFpcGpLFeLD";
-    const appSlug = "chessball";
+    const appSlug = "tactiball";
 
     const currentPath = window.location.pathname;
     const params = new URLSearchParams();
@@ -416,7 +416,7 @@ function ConnectZealyContent() {
 
         <div className="w-full flex justify-center items-center mb-8">
           <div className="flex flex-col items-center">
-            <img src="/logo-white.png" alt="ChessBall Logo" className="h-42" />
+            <img src="/logo-white.png" alt="TactiBall Logo" className="h-42" />
           </div>
         </div>
 
@@ -429,7 +429,7 @@ function ConnectZealyContent() {
                 </svg>
                 <div>
                   <h3 className="font-semibold text-sm mb-1">
-                    Where do you usually play ChessBall?
+                    Where do you usually play TactiBall?
                   </h3>
                   <p className="text-xs leading-relaxed">
                     You can play on <strong>Base App</strong>, <strong>Farcaster</strong>, or directly in your <strong>web browser</strong>.
@@ -534,7 +534,7 @@ function ConnectZealyContent() {
 
       <div className="w-full flex justify-center items-center mb-8">
         <div className="flex flex-col items-center">
-          <img src="/logo-white.png" alt="ChessBall Logo" className="h-42" />
+          <img src="/logo-white.png" alt="TactiBall Logo" className="h-42" />
         </div>
       </div>
 
@@ -552,7 +552,7 @@ function ConnectZealyContent() {
                     Successfully Linked!
                   </h3>
                   <p className="text-sm text-gray-600 mb-4">
-                    Your ChessBall account is now connected to Zealy!
+                    Your TactiBall account is now connected to Zealy!
                   </p>
                   <p className="text-xs text-gray-500">
                     Redirecting back to Zealy...

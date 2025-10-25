@@ -4,6 +4,7 @@ import { publicClient } from '@/lib/providers';
 import { parseEventLogs, Log } from 'viem';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, getGameFromContract, RELAYER_ADDRESS } from '@/lib/contract';
 import { base } from 'viem/chains';
+import { chain } from '@/config/chains';
 import { decodeSymmetricKey, encodeData, bigintToBuffer } from '@/lib/encrypting';
 import { sendWebhookMessage } from '@/lib/webhook';
 import { FIELD_HEIGHT, FIELD_WIDTH, MoveType, serializeMoves, TeamEnum } from '@/lib/game';
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
             abi: CONTRACT_ABI,
             functionName: 'commitGameActionsRelayer',
             args: [body.wallet_address, body.game_id, body.team_enum, encryptedMoves, gameInfo.data.gameState.movesMade + 1],
-            chain: base,
+            chain: chain,
             account: RELAYER_ADDRESS
         });
 

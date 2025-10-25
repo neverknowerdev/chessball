@@ -5,7 +5,7 @@ import { join } from "path";
 import { getImplementationAddress } from "@openzeppelin/upgrades-core";
 import hre from "hardhat";
 import { privateKeyToAccount } from "viem/accounts";
-import { createPublicClient, Hex, http } from "viem";
+import { Address, createPublicClient, Hex, http } from "viem";
 import { toCoinbaseSmartAccount } from "viem/account-abstraction";
 import { baseSepolia } from "viem/chains";
 
@@ -67,7 +67,11 @@ async function main() {
         transport: http(RPC_URL)
     });
 
-    const relayerAddress = owner.address;
+    const relayerAddress = process.env.RELAYER_ADDRESS as Address;
+    if (!relayerAddress) {
+        console.log("RELAYER_ADDRESS env is not set");
+        return;
+    }
 
     // Create Coinbase smart wallet using the EOA signer
     const smartAccount = await toCoinbaseSmartAccount({

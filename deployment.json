@@ -2,14 +2,20 @@
   "baseSepolia": {
     "network": "baseSepolia",
     "chainId": "84532",
-    "proxyAddress": "0x4385EBE9D693b205fdf5CCB552E912e0bf9B533c",
-    "implementationAddress": "0x9Caa63A0673019613FA91737ED34466672C37475",
+    "proxyAddress": "0x40eF61FF6FeAc0EE96754c8B09Cc62f960E1d717",
+    "implementationAddress": "0x0DB59033D7aDAa2385DB16c057eAae6DFe8D0F2f",
     "libraries": {
-      "gameLib": "0x9780ec9Cca586b0AC4Aa80D1d68bBbB96093c3a7"
+      "gameLib": "0x15Aab4FB23d4b06E756299F4E2438F87ceFdfBf3"
     },
     "deployer": "0x9B8af95247a68cE5dc38361D4A03f56bD8463D3f",
-    "timestamp": "2025-09-26T18:27:09.959Z",
-    "gameLibHash": "07269d7fdca6d85fff15e86bb7015b172dadc96d53ceac5a5ec4c7020ff6dd52"
+    "timestamp": "2025-10-24T18:53:12.417Z",
+    "gameLibHash": "07269d7fdca6d85fff15e86bb7015b172dadc96d53ceac5a5ec4c7020ff6dd52",
+    "upgradeTimestamp": "2025-10-24T19:16:00.161Z",
+    "previousImplementation": "0x5Ed88bdEeC615a77167d18C1cBAEb999ee10A30C",
+    "previousLibraries": {
+      "gameLib": "0x15Aab4FB23d4b06E756299F4E2438F87ceFdfBf3"
+    },
+    "librariesUpdated": false
   },
   "baseMainnet": {
     "network": "baseMainnet",

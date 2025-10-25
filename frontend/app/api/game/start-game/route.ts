@@ -4,6 +4,7 @@ import { publicClient } from '@/lib/providers';
 import { sendTransactionWithRetry } from '@/lib/paymaster';
 import { CONTRACT_ABI, CONTRACT_ADDRESS, RELAYER_ADDRESS } from '@/lib/contract';
 import { base } from 'viem/chains';
+import { chain } from '@/config/chains';
 import { checkAuthSignatureAndMessage } from '@/lib/auth';
 import { sendWebhookMessage } from '@/lib/webhook';
 import { generateSymmetricKey, encodeSymmetricKey } from '@/lib/encrypting';
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
             abi: CONTRACT_ABI,
             functionName: 'startGameRelayer',
             args: [wallet_address as Address, game_request_id, encryptedKeyHex],
-            chain: base,
+            chain: chain,
             account: RELAYER_ADDRESS
         });
 
