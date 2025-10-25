@@ -20,13 +20,14 @@ import {
   WalletDropdownDisconnect,
 } from "@coinbase/onchainkit/wallet";
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useAccount, useSignMessage } from "wagmi";
+import { useAccount, useSignMessage, useChainId, useSwitchChain } from "wagmi";
 import { CreateTeamModal } from "./components/CreateTeamModal";
 import { SearchOpponentModal } from "./components/SearchOpponentModal";
 import { GameRequestModal } from "./components/GameRequestModal";
 import { subscribeToTeamChannel, unsubscribeFromTeamChannel } from '@/lib/ably';
 import { getName } from "@coinbase/onchainkit/identity";
 import { base } from 'viem/chains';
+import { chain as configuredChain } from '@/config/chains';
 import { authUserWithSignature, clearCachedAuthSignature } from '@/lib/auth';
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,6 +36,8 @@ import React from "react";
 import { LastGameResults } from './components/LastGameResults';
 import { Leaderboard } from './components/Leaderboard';
 import { GlobalStats } from './components/GlobalStats';
+import LobbyScreen from './components/LobbyScreen';
+import RoomDetails from './components/RoomDetails';
 import moment from "moment";
 
 export default function App() {
@@ -42,6 +45,8 @@ export default function App() {
   const [frameAdded, setFrameAdded] = useState(false);
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
   const [teamInfo, setTeamInfo] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +63,48 @@ export default function App() {
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
+  const [showLobby, setShowLobby] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+
+  // Function to map chain ID to network name
+  const getNetworkName = (chainId: number): string => {
+    const networks: { [key: number]: string } = {
+      1: 'Ethereum Mainnet',
+      3: 'Ropsten Testnet',
+      4: 'Rinkeby Testnet',
+      5: 'Goerli Testnet',
+      10: 'Optimism',
+      42: 'Kovan Testnet',
+      56: 'BSC Mainnet',
+      97: 'BSC Testnet',
+      137: 'Polygon Mainnet',
+      80001: 'Polygon Mumbai',
+      8453: 'Base Mainnet',
+      84532: 'Base Sepolia',
+      11155111: 'Sepolia Testnet',
+    };
+    return networks[chainId] || `Unknown Network (Chain ID: ${chainId})`;
+  };
+
+  // Function to switch to configured chain
+  const switchToConfiguredChain = useCallback(async () => {
+    if (chainId !== configuredChain.id) {
+      try {
+        console.log(`🔄 Switching from ${getNetworkName(chainId)} to ${getNetworkName(configuredChain.id)}`);
+        await switchChain({ chainId: configuredChain.id });
+        console.log(`✅ Successfully switched to ${getNetworkName(configuredChain.id)}`);
+      } catch (error) {
+        console.error('❌ Failed to switch chain:', error);
+        toast.error(`Failed to switch to ${getNetworkName(configuredChain.id)}. Please switch manually.`, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    }
+  }, [chainId, switchChain]);
 
   // Load stats from localStorage on mount
   useEffect(() => {
@@ -146,31 +193,19 @@ export default function App() {
   }, []);
 
 
-  const handlePlayNow = useCallback(() => {
+  const handlePlayNow = () => {
     if (!teamInfo) {
-      toast.error("You need to create a team first!", {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.error("You need to create a team first!");
       return;
     }
-
     if (teamInfo.active_game_id) {
-      toast.error("You have an ongoing game! Please finish it first.", {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.error("You have an ongoing game!");
       return;
     }
 
-    setIsSearchOpponentModalOpen(true);
-  }, [teamInfo]);
+    // Open lobby instead of search modal
+    setShowLobby(true);
+  };
 
   const handleCancelSearch = useCallback(() => {
     setIsSearchOpponentModalOpen(false);
@@ -296,6 +331,14 @@ export default function App() {
   // Watch for wallet connection changes
   useEffect(() => {
     if (isConnected && address) {
+      // Log network information when wallet connects
+      const networkName = getNetworkName(chainId);
+      console.log(`🔗 Connected to wallet: ${address}`);
+      console.log(`🌐 Network: ${networkName} (Chain ID: ${chainId})`);
+
+      // Switch to configured chain if needed
+      switchToConfiguredChain();
+
       fetchTeamInfo(address);
       fetchUsername(address);
     } else {
@@ -307,7 +350,7 @@ export default function App() {
       // Disconnect from team channel when wallet disconnects
       unsubscribeFromTeamChannel();
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, chainId, switchToConfiguredChain]);
 
   useEffect(() => {
     if (!isFrameReady) {
@@ -502,8 +545,8 @@ export default function App() {
 
       {/* Logo - centered on page */}
       <div className="w-full flex justify-center items-center">
-        <div className="flex flex-col items-center">
-          <img src="/logo-white.png" alt="ChessBall Logo" className="h-42" />
+        <div className="flex flex-col items-center w-[200px]">
+          <img src="/logo2.png" alt="TactiBall Logo" className="h-42 w-full" />
         </div>
       </div>
 
@@ -713,6 +756,27 @@ export default function App() {
           elo_rating: teamInfo.elo_rating
         } : null}
       />
+
+      {showLobby && !selectedRoomId && (
+        <LobbyScreen
+          userTeamId={teamInfo.id}
+          userTeamElo={teamInfo.elo_rating}
+          onClose={() => setShowLobby(false)}
+          onRoomSelected={(roomId) => setSelectedRoomId(roomId)}
+        />
+      )}
+
+      {selectedRoomId && (
+        <RoomDetails
+          roomId={selectedRoomId}
+          userTeamId={teamInfo.id}
+          onBack={() => setSelectedRoomId(null)}
+          onGameStarting={(gameRequestId) => {
+            setSelectedRoomId(null);
+            setShowLobby(false);
+          }}
+        />
+      )}
 
       {/* Game Request Modal */}
       {gameRequestData && (

@@ -4,6 +4,7 @@ import { publicClient } from '@/lib/providers';
 import { sendTransactionWithRetry } from '@/lib/paymaster';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, RELAYER_ADDRESS } from '@/lib/contract';
 import { base } from 'viem/chains';
+import { chain } from '@/config/chains';
 import { parseEventLogs } from 'viem';
 import { sendWebhookMessage } from '@/lib/webhook';
 
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
             abi: CONTRACT_ABI,
             functionName: 'finishGameByTimeoutRelayer',
             args: [body.wallet_address, BigInt(body.game_id)],
-            chain: base,
+            chain: chain,
             account: RELAYER_ADDRESS
         });
 

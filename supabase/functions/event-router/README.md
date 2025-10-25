@@ -1,6 +1,6 @@
 # Contract Events Edge Function
 
-This Supabase Edge Function handles smart contract events from the ChessBall game contract and processes them according to the specified business logic.
+This Supabase Edge Function handles smart contract events from the TactiBall game contract and processes them according to the specified business logic.
 
 ## Overview
 

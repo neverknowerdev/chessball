@@ -8,7 +8,7 @@ export default function RulesOfGame() {
         <div>
             <div className="flex justify-center mb-6 mt-6">
                 <a href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
-                    <img src="/logo-white.png" alt="ChessBall Logo" className="h-32" />
+                    <img src="/logo2.png" alt="TactiBall Logo" className="h-32" />
                 </a>
             </div>
 
@@ -55,7 +55,7 @@ export default function RulesOfGame() {
 
                     <h3 className="text-xl font-medium mt-4 mb-2" id="getting-started">Getting Started</h3>
                     <ol className="list-decimal pl-5 text-base text-gray-700">
-                        <li><strong>Create or Join a Team</strong>: Register or log in to the ChessBall platform. You need crypto wallet to start, but you can create it in few clicks if you need.</li>
+                        <li><strong>Create or Join a Team</strong>: Register or log in to the TactiBall platform. You need crypto wallet to start, but you can create it in few clicks if you need.</li>
                         <li><strong>Find a Match</strong>: Navigate to the game lobby to find an opponent. Click "Play" and you will be matched with another player automatically, once another player is available.</li>
                         <li><strong>Invite friends</strong>: Share game into your feed, send a link to your friends, to always have someone to play with.</li>
                         <li><strong>Start the Game</strong>: Once both teams accept the match, the game begins. Team 1 starts with possession of the ball.</li>
@@ -94,7 +94,7 @@ export default function RulesOfGame() {
 
                 <section className="mb-8" id="game-rules">
                     <h1 className="text-3xl font-semibold mb-4">Game Rules</h1>
-                    <p className="text-base text-gray-700">ChessBall is a strategic turn-based soccer game that combines football and chess mechanics. Two teams of 6 players each compete on a 15x11 grid field, with the objective of scoring goals by getting the ball into the opponent&apos;s goal area.</p>
+                    <p className="text-base text-gray-700">TactiBall is a strategic turn-based soccer game that combines football and chess mechanics. Two teams of 6 players each compete on a 15x11 grid field, with the objective of scoring goals by getting the ball into the opponent&apos;s goal area.</p>
                 </section>
 
                 <section className="mb-8" id="field-setup">
@@ -388,7 +388,7 @@ export default function RulesOfGame() {
                     </ul>
                 </section>
 
-                <p className="text-base text-gray-700 mt-6">This comprehensive rule set covers all the mechanics of ChessBall, providing players with a complete understanding of how to play strategically and effectively.</p>
+                <p className="text-base text-gray-700 mt-6">This comprehensive rule set covers all the mechanics of TactiBall, providing players with a complete understanding of how to play strategically and effectively.</p>
             </div>
         </div>
     );

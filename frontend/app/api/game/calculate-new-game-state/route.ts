@@ -8,6 +8,7 @@ import { GameAction } from '@/lib/game';
 import { sendWebhookMessage } from '@/lib/webhook';
 import { parseEventLogs, getContract, decodeErrorResult } from 'viem';
 import { basePreconf } from 'viem/chains';
+import { chain } from '@/config/chains';
 import { getGameFromContract } from '@/lib/contract';
 import { sendTransactionWithRetry } from '@/lib/paymaster';
 
@@ -174,7 +175,7 @@ export async function POST(request: NextRequest) {
                 abi: CONTRACT_ABI,
                 functionName: 'newGameState',
                 args: [gameInfo.data.gameId, contractStateType, gameResult.clashRandomResults, contractTeam1Actions, contractTeam2Actions, gameResult.boardState],
-                chain: basePreconf,
+                chain: chain,
                 account: RELAYER_ADDRESS
             });
             newGameStateRequest = simulationResult.request;

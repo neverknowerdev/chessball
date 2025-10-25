@@ -4,6 +4,7 @@ import { publicClient } from '@/lib/providers';
 import { sendTransactionWithRetry } from '@/lib/paymaster';
 import { CONTRACT_ABI, CONTRACT_ADDRESS, RELAYER_ADDRESS } from '@/lib/contract';
 import { base } from 'viem/chains';
+import { chain } from '@/config/chains';
 import { checkAuthSignatureAndMessage } from '@/lib/auth';
 import { BaseError, ContractFunctionRevertedError } from 'viem';
 import { sendWebhookMessage } from '@/lib/webhook';
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             abi: CONTRACT_ABI,
             functionName: 'createTeamRelayer',
             args: [walletAddress as Address, teamName, countryId],
-            chain: base,
+            chain: chain,
             account: RELAYER_ADDRESS
         });
 

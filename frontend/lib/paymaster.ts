@@ -2,6 +2,7 @@
 import { createPaymasterClient } from 'viem/account-abstraction'
 import { createWalletClient, createPublicClient, http, type Hex } from 'viem';
 import { basePreconf } from 'viem/chains';
+import { chain } from '@/config/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { toCoinbaseSmartAccount } from 'viem/account-abstraction';
 import { createBundlerClient } from 'viem/account-abstraction';
@@ -25,7 +26,7 @@ function getCoinbasePaymasterRpcUrl() {
 
 // Create a dedicated flashblocks client with HTTP transport for faster confirmations
 const flashblocksClient = createPublicClient({
-    chain: basePreconf,
+    chain: chain,
     transport: http(FLASHBLOCKS_RPC_URL),
     pollingInterval: 100,
 });
@@ -57,7 +58,7 @@ export async function createRelayerBundlerClient() {
         account: smartAccount,
         client: flashblocksClient, // Use flashblocks client for faster confirmations
         transport: http(FLASHBLOCKS_RPC_URL),
-        chain: basePreconf,
+        chain: chain,
         paymaster: createPaymasterClient({
             transport: http(getCoinbasePaymasterRpcUrl())
         })
@@ -71,7 +72,7 @@ export async function createRelayerClient() {
     // Return a wallet client that uses the smart account
     return createWalletClient({
         account: smartAccount,
-        chain: basePreconf,
+        chain: chain,
         transport: http(FLASHBLOCKS_RPC_URL),
     });
 }

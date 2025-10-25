@@ -13,7 +13,8 @@ export const ably = new Ably.Realtime({
 // Channel names for different game features
 export const CHANNELS = {
     OPPONENT_FINDING: 'opponent-finding',
-    GAME_CHANNEL: 'game'
+    GAME_CHANNEL: 'game',
+    ROOM_CHANNEL: 'room'
 } as const;
 
 // Types for presence data
@@ -344,9 +345,22 @@ export class WebSocketBroadcastingService {
     }
 
     /**
+ * Broadcast a message to a specific room channel
+ */
+    async broadcastToRoom(roomId: number, eventType: string, message: BroadcastMessage): Promise<void> {
+        try {
+            const channel = `room:${roomId}`;
+            await this.broadcastToChannel(channel, message, eventType);
+            console.log(`Broadcasted to room channel ${channel}:`, message);
+        } catch (error) {
+            console.error(`Error broadcasting to room ${roomId}:`, error);
+        }
+    }
+
+    /**
      * Core broadcasting function using Ably
      */
-    private async broadcastToChannel(channel: string, message: BroadcastMessage): Promise<void> {
+    private async broadcastToChannel(channel: string, message: BroadcastMessage, eventType: string = 'game-event'): Promise<void> {
         try {
             // Add timestamp if not present
             if (!message.timestamp) {
@@ -376,3 +390,109 @@ export class WebSocketBroadcastingService {
         }
     }
 }
+
+
+// Room channel management
+export class RoomChannelManager {
+    private roomChannel: any = null;
+    private isConnected: boolean = false;
+    private roomId: number | null = null;
+
+    /**
+     * Subscribe to a specific room's channel
+     */
+    async subscribeToRoom(roomId: number): Promise<void> {
+        try {
+            // Unsubscribe from previous room channel if exists
+            if (this.roomChannel) {
+                await this.unsubscribeFromRoom();
+            }
+
+            this.roomId = roomId;
+            const channelName = `${CHANNELS.ROOM_CHANNEL}:${roomId}`;
+            this.roomChannel = ably.channels.get(channelName);
+
+            // Subscribe to room updated events
+            this.roomChannel.subscribe('room:updated', (message: any) => {
+                console.log(`[Room ${roomId}] Room updated:`, message.data);
+
+                // Dispatch custom event to the page level
+                const customEvent = new CustomEvent('room-updated', { detail: message.data });
+                window.dispatchEvent(customEvent);
+            });
+
+            // Subscribe to user joined events
+            this.roomChannel.subscribe('user:joined', (message: any) => {
+                console.log(`[Room ${roomId}] User joined:`, message.data);
+
+                const customEvent = new CustomEvent('room-user-joined', { detail: message.data });
+                window.dispatchEvent(customEvent);
+            });
+
+            // Subscribe to user left events
+            this.roomChannel.subscribe('user:left', (message: any) => {
+                console.log(`[Room ${roomId}] User left:`, message.data);
+
+                const customEvent = new CustomEvent('room-user-left', { detail: message.data });
+                window.dispatchEvent(customEvent);
+            });
+
+            this.isConnected = true;
+            console.log(`[Room ${roomId}] Successfully subscribed to room channel: ${channelName}`);
+        } catch (error) {
+            console.error(`[Room ${roomId}] Error subscribing to room channel:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Unsubscribe from the current room channel
+     */
+    async unsubscribeFromRoom(): Promise<void> {
+        if (this.roomChannel) {
+            try {
+                this.roomChannel.unsubscribe();
+                this.roomChannel = null;
+                this.isConnected = false;
+                console.log(`[Room ${this.roomId}] Unsubscribed from room channel`);
+                this.roomId = null;
+            } catch (error) {
+                console.error(`[Room ${this.roomId}] Error unsubscribing from room channel:`, error);
+            }
+        }
+    }
+
+    /**
+     * Check if currently connected to a room channel
+     */
+    isConnectedToRoom(): boolean {
+        return this.isConnected;
+    }
+
+    /**
+     * Get current room ID
+     */
+    getCurrentRoomId(): number | null {
+        return this.roomId;
+    }
+
+    /**
+     * Get current room channel
+     */
+    getRoomChannel(): any {
+        return this.roomChannel;
+    }
+}
+
+// Create a singleton instance for room channel management
+export const roomChannelManager = new RoomChannelManager();
+
+// Helper function to subscribe to room channel
+export const subscribeToRoom = async (roomId: number): Promise<void> => {
+    return roomChannelManager.subscribeToRoom(roomId);
+};
+
+// Helper function to unsubscribe from room channel
+export const unsubscribeFromRoom = async (): Promise<void> => {
+    return roomChannelManager.unsubscribeFromRoom();
+};

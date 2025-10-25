@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           message:
-            "Account not connected. Please visit play.chessball.fun/connect-zealy to connect your account!",
+            "Account not connected. Please visit play.tactiball.fun/connect-zealy to connect your account!",
         },
         { status: 400 },
       );
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       console.log(`[${requestId}] No team found for wallet:`, zealyConnectIdentifier);
       return NextResponse.json(
         {
-          message: `No ChessBall team found. Please create a team at play.chessball.fun first!`,
+          message: `No TactiBall team found. Please create a team at play.tactiball.fun first!`,
         },
         { status: 400 },
       );
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       console.error(`[${requestId}] Team has no zealy_user_id set`);
       return NextResponse.json(
         {
-          message: `Please connect your account at play.chessball.fun/connect-zealy first!`,
+          message: `Please connect your account at play.tactiball.fun/connect-zealy first!`,
         },
         { status: 400 },
       );
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
       console.log(`[${requestId}] Zealy user ID mismatch. Expected: ${team.zealy_user_id}, Got: ${userId}`);
       return NextResponse.json(
         {
-          message: `Account mismatch. Please reconnect at play.chessball.fun/connect-zealy`,
+          message: `Account mismatch. Please reconnect at play.tactiball.fun/connect-zealy`,
         },
         { status: 400 },
       );

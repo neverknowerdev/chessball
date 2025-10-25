@@ -4,8 +4,15 @@ import { publicClient } from '@/lib/providers';
 import { sendTransactionWithRetry } from '@/lib/paymaster';
 import { CONTRACT_ABI, CONTRACT_ADDRESS, RELAYER_ADDRESS } from '@/lib/contract';
 import { base } from 'viem/chains';
+import { chain } from '@/config/chains';
 import { checkAuthSignatureAndMessage } from '@/lib/auth';
 import { sendWebhookMessage } from '@/lib/webhook';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 interface CreateGameRequestRequest {
     wallet_address: string;
@@ -69,7 +76,7 @@ export async function POST(request: NextRequest) {
             abi: CONTRACT_ABI,
             functionName: 'createGameRequestRelayer',
             args: [wallet_address as Address, team1_id, team2_id],
-            chain: base,
+            chain: chain,
             account: RELAYER_ADDRESS
         });
 
@@ -82,22 +89,51 @@ export async function POST(request: NextRequest) {
 
         await sendWebhookMessage(logs);
 
+        const gameRequestId = paymasterReceipt.receipt.transactionHash;
+
         console.log('Creating game request with relayer:', {
             wallet_address,
             team1_id,
             team2_id,
-            transactionHash: paymasterReceipt.receipt.transactionHash
+            transactionHash: gameRequestId
         });
+
+        // Check if this game request came from a waiting room
+        try {
+            const { data: room } = await supabase
+                .from('waiting_rooms')
+                .select('id')
+                .eq('host_team_id', team1_id)
+                .eq('guest_team_id', team2_id)
+                .eq('status', 'full')
+                .single();
+            
+            if (room) {
+                // Update room with game request ID
+                await supabase
+                    .from('waiting_rooms')
+                    .update({ 
+                        game_request_id: gameRequestId,
+                        status: 'starting'
+                    })
+                    .eq('id', room.id);
+                
+                console.log('Updated waiting room:', room.id);
+            }
+        } catch (waitingRoomError) {
+            // Log error but don't fail the request
+            console.error('Error updating waiting room:', waitingRoomError);
+        }
 
         return NextResponse.json({
             success: true,
             message: 'Game request created successfully',
             data: {
-                gameRequestId: paymasterReceipt.receipt.transactionHash, // Using transaction hash as temporary ID
+                gameRequestId: gameRequestId,
                 team1_id,
                 team2_id,
                 status: 'pending',
-                transactionHash: paymasterReceipt.receipt.transactionHash
+                transactionHash: gameRequestId
             }
         });
 

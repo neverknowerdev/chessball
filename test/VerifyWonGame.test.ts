@@ -117,7 +117,7 @@ describe('Zealy Verify User Won Game API', () => {
     
     expect(response.status).toBe(400);
     const body = await response.json();
-    expect(body.message).toContain('No ChessBall team found');
+    expect(body.message).toContain('No TactiBall team found');
   });
 
   it('should verify team exists in database', async () => {
